@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>バックアップ</h1>
+    <p>現在のデータベースをCSV形式で保存し、保存済みバックアップから復元します。</p>
+  </div>
+</section>
+
+<section class="grid-two">
+  <div class="panel">
+    <h2>CSVバックアップ</h2>
+    <p>会社、従業員、付与履歴、行使履歴、計画行使日をCSVにまとめたZIPをダウンロードします。</p>
+    <form action="{{ url_for('export_backup') }}" method="get" class="form-grid single">
+      <button>バックアップをダウンロード</button>
+    </form>
+  </div>
+
+  <div class="panel">
+    <h2>バックアップから復元</h2>
+    <p>バックアップZIPの内容で現在のデータベースを置き換えます。復元前に現在のバックアップを保存してください。</p>
+    <form action="{{ url_for('restore_backup') }}" method="post" enctype="multipart/form-data" class="form-grid single">
+      <label>バックアップZIP
+        <input type="file" name="backup_file" accept=".zip,application/zip" required>
+      </label>
+      <button class="danger" onclick="return confirm('現在のデータベースをバックアップ内容で置き換えます。復元しますか？')">復元する</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

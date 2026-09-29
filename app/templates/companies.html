@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>会社マスター</h1>
+    <p>複数社の従業員と年休を同じシステムで分けて管理します。</p>
+  </div>
+</section>
+
+<section class="grid-two">
+  <div class="panel">
+    <h2>会社登録</h2>
+    <form method="post" class="form-grid">
+      <label>表示名<input name="name" required></label>
+      <label>法人名<input name="legal_name"></label>
+      <label>締め月<input type="number" name="closing_month" value="12" min="1" max="12"></label>
+      <button>登録</button>
+    </form>
+  </div>
+  <div class="panel">
+    <h2>登録済み会社</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>表示名</th><th>法人名</th><th>締め月</th></tr></thead>
+        <tbody>
+          {% for company in companies %}
+            <tr><td>{{ company.name }}</td><td>{{ company.legal_name }}</td><td>{{ company.closing_month }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}

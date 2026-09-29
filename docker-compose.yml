@@ -1,0 +1,15 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8011:8000"
+    volumes:
+      - app_data:/app/instance
+    environment:
+      - DATABASE_PATH=/app/instance/nenkyuu.db
+      - APP_START_YEAR=2026
+
+volumes:
+  app_data:
+
+

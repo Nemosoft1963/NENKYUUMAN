@@ -1,0 +1,26 @@
+__pycache__/
+*.py[cod]
+
+# Local runtime data and database backups
+instance/
+backups/
+tmp/
+*.db
+*.sqlite
+*.sqlite3
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Codex local workspace metadata
+.agents/
+.codex/
+RESUME_MEMO.md
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

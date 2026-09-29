@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <div><h1>年休管理帳票</h1><p>対象者を選択して個人別PDFを作成します。</p></div>
+</section>
+
+<section class="panel">
+  <form method="get" class="form-grid">
+    <label>会社
+      <select name="company_id">
+        {% for company in companies %}
+          <option value="{{ company.id }}" {% if company.id == company_id %}selected{% endif %}>{{ company.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="check-label"><input type="checkbox" name="include_inactive" value="1" {% if include_inactive %}checked{% endif %}> 退職者を含める</label>
+    <button type="submit">対象者を表示</button>
+  </form>
+</section>
+
+<section class="panel">
+  <form method="post" action="{{ url_for('reports.report_pdf') }}">
+    <input type="hidden" name="company_id" value="{{ company_id or '' }}">
+    <input type="hidden" name="include_inactive" value="{{ 1 if include_inactive else 0 }}">
+    <div class="report-toolbar">
+      <label>対象年<input type="number" name="year" value="{{ current_year }}" min="2000" max="2100"></label>
+      <button type="button" class="secondary" onclick="setReportChecks(true)">全員を選択</button>
+      <button type="button" class="secondary" onclick="setReportChecks(false)">選択解除</button>
+      <button type="submit">選択した人のPDFを作成</button>
+    </div>
+    <p class="report-note">誰も選択しない場合は、表示中の全員分を作成します。1人だけ、複数人、全員を選べます。</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>選択</th><th>社員番号</th><th>氏名</th><th>部署</th><th>在籍状態</th><th>入社日</th></tr></thead>
+        <tbody>
+          {% for employee in employees %}
+          <tr>
+            <td><input class="report-check" type="checkbox" name="employee_ids" value="{{ employee.id }}"></td>
+            <td>{{ employee.employee_code }}</td><td>{{ employee.name }}</td><td>{{ employee.department }}</td>
+            <td>{{ '在籍' if employee.active else '退職' }}</td><td>{{ employee.hire_date }}</td>
+          </tr>
+          {% else %}<tr><td colspan="6" class="empty">対象者がいません。</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </form>
+</section>
+<script>
+function setReportChecks(checked) {
+  document.querySelectorAll('.report-check').forEach(function (item) { item.checked = checked; });
+}
+</script>
+{% endblock %}

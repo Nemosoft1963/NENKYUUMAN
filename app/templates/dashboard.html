@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>{{ year }}年 年休ダッシュボード</h1>
+    <p>会社別に、付与・行使・計画行使・年5日取得義務の不足を確認します。</p>
+  </div>
+  <form method="get" class="filters">
+    <select name="company_id">
+      {% for company in companies %}
+        <option value="{{ company.id }}" {% if company.id == company_id %}selected{% endif %}>{{ company.name }}</option>
+      {% endfor %}
+    </select>
+    <input type="number" name="year" value="{{ year }}" min="2026">
+    <button>表示</button>
+  </form>
+</section>
+
+<section class="panel">
+  <div class="panel-title">
+    <h2>従業員別残数</h2>
+    <form action="{{ url_for('refresh') }}" method="post">
+      <input type="hidden" name="year" value="{{ year }}">
+      <input type="hidden" name="company_id" value="{{ company_id or '' }}">
+      <button>再計算</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>会社</th>
+          <th>社員番号</th>
+          <th>氏名</th>
+          <th>入社日</th>
+          <th>付与日</th>
+          <th>有効付与</th>
+          <th>年間行使</th>
+          <th>計画行使</th>
+          <th>現在残</th>
+          <th>5日義務不足</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in employees %}
+          <tr>
+            <td>{{ row.employee.company_name }}</td>
+            <td>{{ row.employee.employee_code }}</td>
+            <td><a href="{{ url_for('employee_detail', employee_id=row.employee.id) }}">{{ row.employee.name }}</a></td>
+            <td>{{ row.employee.hire_date }}</td>
+            <td>{{ row.latest_grant_date }}</td>
+            <td>{{ "%.1f"|format(row.granted_available_year) }}</td>
+            <td>{{ "%.1f"|format(row.used_year) }}</td>
+            <td>{{ "%.1f"|format(row.planned_year) }}</td>
+            <td>{{ "%.1f"|format(row.remaining_current) }}</td>
+            <td class="{% if row.target_gap > 0 %}warn{% endif %}">{{ "%.1f"|format(row.target_gap) }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="10" class="empty">従業員を登録してください。</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="grid-two">
+  <div class="panel">
+    <h2>計画行使日の修正</h2>
+    <div class="table-wrap planned-days-wrap">
+      <table class="planned-days-table">
+        <thead>
+          <tr><th>日付</th><th>会社</th><th>メモ</th><th>操作</th></tr>
+        </thead>
+        <tbody>
+          {% for day in planned_days %}
+            <tr>
+              <td>
+                <input form="planned-update-{{ day.id }}" type="date" name="leave_date" value="{{ day.leave_date }}" required>
+              </td>
+              <td>
+                <select form="planned-update-{{ day.id }}" name="company_id">
+                  {% for company in companies %}
+                    <option value="{{ company.id }}" {% if company.id == day.company_id %}selected{% endif %}>{{ company.name }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td>
+                <input form="planned-update-{{ day.id }}" name="note" value="{{ day.note or '' }}">
+              </td>
+              <td class="actions">
+                <form id="planned-update-{{ day.id }}" action="{{ url_for('update_planned_day', planned_day_id=day.id) }}" method="post">
+                  <button>更新</button>
+                </form>
+                <form action="{{ url_for('delete_planned_day', planned_day_id=day.id) }}" method="post">
+                  <button class="danger" onclick="return confirm('この計画行使日を削除しますか？')">削除</button>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="4" class="empty">計画行使日はありません。</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>計画行使日の追加</h2>
+    <form action="{{ url_for('add_planned_day') }}" method="post" class="form-grid">
+      <label>会社
+        <select name="company_id">
+          {% for company in companies %}
+            <option value="{{ company.id }}" {% if company.id == company_id %}selected{% endif %}>{{ company.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>日付
+        <input type="date" name="leave_date" required>
+      </label>
+      <label>メモ
+        <input name="note" placeholder="会社指定計画行使">
+      </label>
+      <button>追加して反映</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

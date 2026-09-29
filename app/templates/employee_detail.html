@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>{{ employee.name }}</h1>
+    <p>{{ employee.company_name }} / {{ employee.employee_code }} / 入社日 {{ employee.hire_date }}</p>
+  </div>
+</section>
+
+<section class="stats">
+  <div><strong>{{ "%.1f"|format(balance.remaining_at_year_end) }}</strong><span>年末残見込</span></div>
+  <div><strong>{{ "%.1f"|format(balance.used_year) }}</strong><span>今年の行使</span></div>
+  <div><strong>{{ "%.1f"|format(balance.target_gap) }}</strong><span>5日義務不足</span></div>
+</section>
+
+<section class="grid-two">
+  <div class="panel">
+    <h2>行使日の入力</h2>
+    <form action="{{ url_for('add_leave_usage') }}" method="post" class="form-grid">
+      <input type="hidden" name="employee_id" value="{{ employee.id }}">
+      <label>行使日<input type="date" name="leave_date" required></label>
+      <label>日数<input type="number" name="days" value="1" min="0.5" step="0.5" required></label>
+      <label>種別
+        <select name="leave_kind">
+          {% for key, label in leave_types.items() %}
+            <option value="{{ key }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>メモ<input name="note"></label>
+      <button>登録</button>
+    </form>
+  </div>
+  <div class="panel">
+    <h2>マスター情報</h2>
+    <dl class="details">
+      <dt>雇用区分</dt><dd>{{ employee.employment_status }}</dd>
+      <dt>部署</dt><dd>{{ employee.department }}</dd>
+      <dt>役職</dt><dd>{{ employee.position }}</dd>
+      <dt>週所定労働日数</dt><dd>{{ employee.weekly_work_days }}</dd>
+      <dt>週所定労働時間</dt><dd>{{ employee.weekly_work_hours }}</dd>
+      <dt>メール</dt><dd>{{ employee.email }}</dd>
+      <dt>電話</dt><dd>{{ employee.phone }}</dd>
+    </dl>
+  </div>
+</section>
+
+<section class="grid-two">
+  <div class="panel">
+    <h2>付与履歴</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>付与日</th><th>日数</th><th>失効日</th><th>区分</th></tr></thead>
+        <tbody>
+          {% for grant in grants %}
+            <tr><td>{{ grant.grant_date }}</td><td>{{ grant.days }}</td><td>{{ grant.expires_on }}</td><td>{{ grant.source }}</td></tr>
+          {% else %}
+            <tr><td colspan="4" class="empty">付与履歴はありません。</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>行使履歴</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>行使日</th><th>日数</th><th>種別</th><th>メモ</th></tr></thead>
+        <tbody>
+          {% for leave in leaves %}
+            <tr><td>{{ leave.leave_date }}</td><td>{{ leave.days }}</td><td>{{ leave.leave_kind|leave_type }}</td><td>{{ leave.note }}</td></tr>
+          {% else %}
+            <tr><td colspan="4" class="empty">行使履歴はありません。</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}

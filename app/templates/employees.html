@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>従業員マスター</h1>
+    <p>労務管理に必要な基本情報と、年休付与計算に使う勤務条件を管理します。</p>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>従業員登録</h2>
+  <form method="post" class="form-grid wide">
+    <label>会社
+      <select name="company_id" required>
+        {% for company in companies %}
+          <option value="{{ company.id }}">{{ company.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>社員番号<input name="employee_code" required></label>
+    <label>氏名<input name="name" required></label>
+    <label>氏名カナ<input name="name_kana"></label>
+    <label>メール<input type="email" name="email"></label>
+    <label>部署<input name="department"></label>
+    <label>役職<input name="position"></label>
+    <label>雇用区分
+      <select name="employment_status">
+        <option value="regular">正社員</option>
+        <option value="contract">契約社員</option>
+        <option value="part_time">パート</option>
+        <option value="temporary">派遣・その他</option>
+      </select>
+    </label>
+    <label>入社日<input type="date" name="hire_date" required></label>
+    <label>生年月日<input type="date" name="birth_date"></label>
+    <label>週所定労働日数<input type="number" step="0.5" name="weekly_work_days" value="5" min="1" max="7"></label>
+    <label>週所定労働時間<input type="number" step="0.5" name="weekly_work_hours" value="40" min="1"></label>
+    <label>年間所定労働日数<input type="number" name="scheduled_annual_work_days" min="1"></label>
+    <label>電話<input name="phone"></label>
+    <label>住所<input name="address"></label>
+    <label>緊急連絡先<input name="emergency_contact"></label>
+    <label>社会保険・労務メモ<input name="social_insurance_note"></label>
+    <button>登録</button>
+  </form>
+</section>
+<section class="panel">
+  <h2>CSVアップロード</h2>
+  <form action="{{ url_for('upload_employees') }}" method="post" enctype="multipart/form-data" class="form-grid">
+    <label>既定の会社
+      <select name="company_id" required>
+        {% for company in companies %}
+          <option value="{{ company.id }}">{{ company.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>CSVファイル
+      <input type="file" name="csv_file" accept=".csv,text/csv" required>
+    </label>
+    <button>CSV取込</button>
+  </form>
+  <p class="help-text">必須列: 社員番号, 氏名, 入社日。任意列: 会社, 氏名カナ, メール, 部署, 役職, 雇用区分, 生年月日, 週所定労働日数, 週所定労働時間, 年間所定労働日数, 電話, 住所, 緊急連絡先, 社会保険・労務メモ。</p>
+</section><section class="panel">
+  <h2>登録済み従業員</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>会社</th>
+          <th>社員番号</th>
+          <th>氏名</th>
+          <th>部署</th>
+          <th>入社日</th>
+          <th>週日数</th>
+          <th>週時間</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for employee in employees %}
+          <tr>
+            <td>{{ employee.company_name }}</td>
+            <td>{{ employee.employee_code }}</td>
+            <td><a href="{{ url_for('employee_detail', employee_id=employee.id) }}">{{ employee.name }}</a></td>
+            <td>{{ employee.department }}</td>
+            <td>{{ employee.hire_date }}</td>
+            <td>{{ employee.weekly_work_days }}</td>
+            <td>{{ employee.weekly_work_hours }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7" class="empty">まだ登録がありません。</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
