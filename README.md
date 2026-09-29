@@ -96,3 +96,73 @@ SQLiteデータはDocker volumeの `nenkyuuman_app_data` に保存されます�
 - 年次有給休暇管理簿は3年間保存が必要です。SQLite volumeを削除しない運用にしてください。
 
 出勤率8割の判定、労使協定の締結状況、個別の就業規則・賃金計算は、この初期版では自動判定していません。
+
+## 動作環境
+
+- Docker Desktop、またはDocker EngineとDocker Compose
+- Webブラウザ
+- 既定の公開ポート `8011`
+
+初回起動にはコンテナイメージの取得・ビルドが必要です。
+
+```powershell
+docker compose up -d --build
+```
+
+更新後に再ビルドする場合:
+
+```powershell
+git pull
+docker compose up -d --build
+```
+
+通常の `docker compose down` ではデータは保持されます。`docker compose down -v` はSQLiteを保存しているDocker volumeも削除するため、バックアップなしでは実行しないでください。
+
+## 設定
+
+| 環境変数 | 既定値 | 用途 |
+| --- | --- | --- |
+| `DATABASE_PATH` | `/app/instance/nenkyuu.db` | SQLiteデータベースの保存先 |
+| `APP_START_YEAR` | `2026` | 計画付与日を作成する開始年 |
+| `SECRET_KEY` | `dev-only-change-me` | Flaskのセッション署名鍵 |
+
+実運用ではプロジェクト直下に `.env` を作り、推測されにくい `SECRET_KEY` を設定してください。`.env` はGitの公開対象から除外されています。
+
+```dotenv
+SECRET_KEY=十分に長いランダムな文字列
+```
+
+ランダム値は次の例で生成できます。
+
+```powershell
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+## バックアップと復元
+
+画面上部の「バックアップ」から操作します。
+
+- 「CSVバックアップをダウンロード」で、全テーブルをUTF-8 BOM付きCSVとして格納したZIPを保存します。
+- 復元では、このシステムが出力したZIPを指定します。
+- 復元すると現在の会社・従業員・付与・取得・計画付与データがバックアップ内容へ置き換わります。
+- 復元前に、現在の状態もバックアップして保管してください。
+
+バックアップZIPには `companies.csv`、`employees.csv`、`leave_grants.csv`、`leave_usages.csv`、`planned_leave_days.csv` が含まれます。
+
+## データとセキュリティ
+
+- 従業員の氏名、住所、連絡先、労務メモなどを扱うため、バックアップZIPも個人情報として管理してください。
+- 現在の版にはログイン認証や利用者ごとの権限制御がありません。インターネットへ直接公開せず、アクセスを制限した社内ネットワークで使用してください。
+- 法令判定を完全に自動化するものではありません。付与・取得結果は担当者が確認してください。
+
+## リポジトリ構成
+
+- `app/main.py`: 画面、データベース、年休付与、バックアップ処理
+- `app/reports.py`: PDF帳票出力
+- `app/templates/`: HTMLテンプレート
+- `app/static/`: スタイルシート
+- `docker-compose.yml`: コンテナ、ポート、データ保存設定
+
+## ライセンス
+
+現時点ではライセンスファイルを設定していません。利用、改変、再配布の条件はリポジトリ所有者へ確認してください。

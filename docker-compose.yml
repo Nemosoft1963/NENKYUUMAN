@@ -8,6 +8,7 @@ services:
     environment:
       - DATABASE_PATH=/app/instance/nenkyuu.db
       - APP_START_YEAR=2026
+      - SECRET_KEY=${SECRET_KEY:-dev-only-change-me}
 
 volumes:
   app_data:
